@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
+use Storage;
 
 class UserController extends Controller
 {
@@ -28,7 +30,6 @@ class UserController extends Controller
     }
 
     public function create() {
-       
     	return view('user.create');
     }
 
@@ -40,10 +41,19 @@ class UserController extends Controller
     		'born' => 'required|date',
     		'hobby' => 'required|string',
     		'phone' => 'required|string',
-    		'password' => 'required|string|confirmed'
+    		'password' => 'required|string|confirmed',
+            'profile' => 'required|file|image'
     	]);
 
-    	User::create($request->all());
+        $file = $request->file('profile');
+        $filename = sha1($file->getClientOriginalName().Carbon::now().mt_rand()).'.'.$file->getClientOriginalExtension();
+
+        $user = (object)$request->all();
+        $file->storeAs('public/user/images',$filename);
+
+        $user->password= bcrypt($request->password);
+        $user->profile = $filename;
+    	User::create((array)$user);
 
     	return redirect()->route('user.index')->with('success','Successfully created new user');
     }
@@ -69,6 +79,21 @@ class UserController extends Controller
             'phone' => 'required|string'
         ]);
 
+        if($request->profile) {
+            $request->validate([ 'profile' => 'required|file|image' ]);
+            $file = $request->file('profile');
+            $filename = sha1($file->getClientOriginalName().Carbon::now().mt_rand()).'.'.$file->getClientOriginalExtension();
+            $file->storeAs('public/user/images',$filename);
+
+            $path = 'public/user/images/'.$user->profile;
+
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+            }
+
+            $user->profile = $filename;
+        }
+
         if ($request->password) {
            $request->validate(['password'=>'required|string|confirmed']);
            $user->password = bcrypt($request->password);
@@ -89,6 +114,11 @@ class UserController extends Controller
 
     public function delete(Request $request){
         $user = User::findOrFail($request->id);
+        $path = 'public/user/images/'.$user->profile;
+        if (Storage::exists($path)) {
+           Storage::delete($path);
+        }
+
         $user->delete();
 
         return redirect()->route('user.index')->withSuccess('Successfully deleted user');
