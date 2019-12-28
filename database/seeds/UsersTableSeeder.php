@@ -13,9 +13,9 @@ class UsersTableSeeder extends Seeder
     public function run()
     {
         User::create([
-        	'name' => 'Frastio Agustian',
+        	'name' => 'Frastio',
         	'email' => 'frastio.agustian@gmail.com',
-        	'address' => 'Sukabumi Jawa Barat',
+        	'address' => 'Sukabumi',
         	'hobby' => 'Sepak Bola',
         	'phone' => '081234567890',
         	'born'=> '2003-10-08',

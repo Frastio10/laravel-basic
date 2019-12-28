@@ -17,6 +17,7 @@
 			</form>
 		</div>
 	</div>
+	
 	<div class="card-body">
 		<div class="table-responsive">
 			<table class="table table-stripped table-bordered">
@@ -30,6 +31,7 @@
 						<th>Born</th>
 						<th>Age</th>
 						<th>Hobby</th>
+						<th>Action	</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -43,10 +45,21 @@
 							<td>{{ $user->born }}</td>
 							<td>{{ \Carbon\Carbon::parse($user->born)->diffForHumans(null, true) }}</td>
 							<td>{{ $user->hobby }}</td>
+							<td>
+								<a href="{{ route('user.edit',$user->id) }}" class="btn btn-sm float-left btn-warning text-white">Edit</a>
+								<form action="{{ route('user.delete') }}" class="float-left" method="POST">
+									@csrf
+									{{ method_field('DELETE') }}
+									<input type="hidden" name="id" value="{{ $user->id }}">
+									<button href="{{ route('user.delete') }}" type="submit" class="btn btn-sm btn-danger ml-3 text-white">Delete</button>
+									
+								</form>
+							</td>
 						</tr>
 					@endforeach
 				</tbody>
 			</table>
+			{{ $users->links() }}
 		</div>
 	</div>
 </div>
